@@ -1,17 +1,29 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
     android:padding="16dp">
 
+    <!-- Title TextView -->
     <TextView
-        android:id="@+id/widgetTextView"
+        android:id="@+id/titleTextView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Hello, Widget!"
-        android:textSize="18sp"
-        android:textColor="@android:color/white"/>
+        android:text="My List"
+        android:textSize="24sp"
+        android:layout_centerHorizontal="true"
+        android:paddingTop="16dp"/>
 
+    <!-- ListView -->
+    <ListView
+        android:id="@+id/listView"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_below="@id/titleTextView"
+        android:divider="@android:color/darker_gray"
+        android:dividerHeight="0.5dp"
+        android:paddingTop="16dp"
+        android:paddingBottom="16dp"/>
     <!-- Add more UI components as needed -->
-</LinearLayout>
+</RelativeLayout>
