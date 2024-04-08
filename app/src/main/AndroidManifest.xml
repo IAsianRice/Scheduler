@@ -1,6 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
+    <uses-permission android:name="android.permission.USE_EXACT_ALARM" />
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
+
 
     <application
         android:allowBackup="true"
@@ -12,6 +18,8 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.Scheduler"
         tools:targetApi="34">
+        <service android:name=".services.SchedulerNotificationService" />
+        <service android:name=".services.SchedulerTrackerService" />
         <activity
             android:name=".MainActivity"
             android:exported="true"
@@ -39,6 +47,7 @@
                 android:name="android.appwidget.provider"
                 android:resource="@xml/widget_info" />
         </receiver>
+        <receiver android:name=".receiver.ScheduleNotificationBroadcastReceiver"/>
     </application>
 
 </manifest>

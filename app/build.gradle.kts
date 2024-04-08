@@ -10,7 +10,7 @@ android {
 
     defaultConfig {
         applicationId = "com.example.scheduler"
-        minSdk = 24
+        minSdk = 30
         targetSdk = 34
         versionCode = 1
         versionName = "1.0"
@@ -24,6 +24,7 @@ android {
     buildTypes {
         release {
             isMinifyEnabled = false
+            isDebuggable = false
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
@@ -62,6 +63,8 @@ dependencies {
     implementation("androidx.compose.material3:material3:1.1.2")
     implementation("androidx.room:room-ktx:2.6.1")
     implementation("androidx.constraintlayout:constraintlayout-compose:1.1.0-alpha13")
+    implementation("junit:junit:4.12")
+    implementation("androidx.appcompat:appcompat:1.6.1")
     annotationProcessor("androidx.room:room-compiler:2.6.1")
     ksp("androidx.room:room-compiler:2.6.1")
     testImplementation("junit:junit:4.13.2")

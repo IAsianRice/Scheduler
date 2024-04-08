@@ -14,7 +14,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.DateRange
 import androidx.compose.material.icons.outlined.Home
 import androidx.compose.material.icons.outlined.List
-import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material.icons.outlined.Star
 import androidx.compose.material3.BottomAppBar
 import androidx.compose.material3.Divider
@@ -127,13 +126,13 @@ class SchedulerNavComposables {
                         .weight(1.0f)
                         .fillMaxHeight()
                         .clickable {
-                            fragmentViewModel.setFragmentState(FragmentState.LandingPageFragment)
+                            fragmentViewModel.setFragmentState(FragmentState.TasksFragment)
                         },
                         horizontalAlignment = Alignment.CenterHorizontally,
                         verticalArrangement = Arrangement.Center) {
-                        Icon(imageVector = Icons.Outlined.Settings, contentDescription = "Settings")
-                        Text(text = "Settings")
-                        if (selected == FragmentState.LandingPageFragment) {
+                        Icon(imageVector = Icons.Outlined.DateRange, contentDescription = "")
+                        Text(text = "Tasks")
+                        if (selected == FragmentState.TasksFragment) {
                             Divider(
                                 color = MaterialTheme.colorScheme.primary,
                                 thickness = 4.dp,
@@ -147,13 +146,13 @@ class SchedulerNavComposables {
                         .weight(1.0f)
                         .fillMaxHeight()
                         .clickable {
-                            fragmentViewModel.setFragmentState(FragmentState.LandingPageFragment)
+                            fragmentViewModel.setFragmentState(FragmentState.UnimplementedFragment)
                         },
                         horizontalAlignment = Alignment.CenterHorizontally,
                         verticalArrangement = Arrangement.Center) {
                         Icon(imageVector = Icons.Outlined.Star, contentDescription = "Stats")
                         Text(text = "Stats")
-                        if (selected == FragmentState.LandingPageFragment) {
+                        if (selected == FragmentState.UnimplementedFragment) {
                             Divider(
                                 color = MaterialTheme.colorScheme.primary,
                                 thickness = 4.dp,
@@ -167,13 +166,13 @@ class SchedulerNavComposables {
                         .weight(1.0f)
                         .fillMaxHeight()
                         .clickable {
-                            fragmentViewModel.setFragmentState(FragmentState.LandingPageFragment)
+                            fragmentViewModel.setFragmentState(FragmentState.CalendarFragment)
                         },
                         horizontalAlignment = Alignment.CenterHorizontally,
                         verticalArrangement = Arrangement.Center) {
                         Icon(imageVector = Icons.Outlined.DateRange, contentDescription = "Calender")
                         Text(text = "Calender")
-                        if (selected == FragmentState.LandingPageFragment) {
+                        if (selected == FragmentState.CalendarFragment) {
                             Divider(
                                 color = MaterialTheme.colorScheme.primary,
                                 thickness = 4.dp,

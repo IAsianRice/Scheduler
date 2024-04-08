@@ -8,33 +8,27 @@ import androidx.room.PrimaryKey
 @Entity(tableName = "active_schedules",
     foreignKeys = [ForeignKey(
         entity = ScheduleItem::class,
-        parentColumns = ["id"],
+        parentColumns = ["scheduleId"],
         childColumns = ["schedule_id"],
         onDelete = ForeignKey.CASCADE // Optional: define behavior on delete
     )])
 data class ActiveScheduleItem(
     @PrimaryKey(autoGenerate = true)
-    val id: Long = 0,
+    val activeScheduleId: Long = 0,
     @ColumnInfo(name = "schedule_id")
     val scheduleID: Long,
-    val repeatFactor: Int, // e.g Biweekly (2), Triweekly(3)
-    val durationHour: Int, // Required
-    val durationMinute: Int, // Required
-    val durationSecond: Int, // Required
-    val startingTimeHour: Int, // ...
-    val startingTimeMinute: Int, // If Specified, Repeat Daily
-    val dayOfWeek: Int, // If Specified, Repeat Weekly (Ignored if dayOfMonth is specified)
-    val dayOfMonth: Int, // If Specified, Repeat Monthly
-    val month: Int, // If Specified, Repeat Yearly
-    val year: Int, // If Specified, One Time schedule!
+    val repeatFlag: Int,
+    val durationInMillis: Long,
+    val startTimeInMillis: Long,
 )
 /**
+ * (repeatFlag)
  * Precedence Chart
  * From Highest (Top) to Lowest (Bottom)
  * ****************************
- * One Time Schedule
- * Yearly Repeat
- * Monthly Repeat
- * Weekly Repeat
- * Daily Repeat
+ * One Time Schedule = 0
+ * Yearly Repeat = 1
+ * Monthly Repeat = 2
+ * Weekly Repeat = 3
+ * Daily Repeat = 4
  */

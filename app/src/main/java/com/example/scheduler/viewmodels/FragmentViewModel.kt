@@ -8,9 +8,16 @@ import java.util.Stack
 
 sealed class FragmentState {
     object AddScheduleFragment : FragmentState()
+    object TasksFragment : FragmentState()
     object ScheduleDetailsFragment : FragmentState()
     object LandingPageFragment : FragmentState()
     object ScheduleListFragment : FragmentState()
+    object CalendarFragment : FragmentState()
+    object WeeklyScheduleFragment : FragmentState()
+    object SetScheduleFragment : FragmentState()
+    object PictureInPictureFragment : FragmentState()
+    object UnimplementedFragment : FragmentState()
+    //object QuotaSelectFragment : FragmentState()
 }
 
 class FragmentViewModel : ViewModel() {
@@ -36,6 +43,15 @@ class FragmentViewModel : ViewModel() {
         }
         val state = fragmentStack.peek()
         _fragmentStateFlow.value = state
+        return true
+    }
+
+    fun skipBackOver(fragmentState: FragmentState): Boolean {
+        while (fragmentStack.peek() == fragmentState)
+        {
+            fragmentStack.pop()
+        }
+        _fragmentStateFlow.value = fragmentStack.peek()
         return true
     }
 

@@ -1,17 +1,16 @@
 package com.example.scheduler.fragments
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -19,6 +18,7 @@ import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.ListItem
+import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
@@ -26,17 +26,13 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
-import androidx.compose.ui.input.pointer.pointerInput
-import androidx.compose.ui.input.pointer.positionChange
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.tooling.preview.Preview
@@ -45,15 +41,27 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.em
 import androidx.compose.ui.zIndex
 import com.example.scheduler.MainActivity
+import com.example.scheduler.composables.SchedulerAAGComposables.Companion.ShortList
 import com.example.scheduler.composables.SchedulerNavComposables
+import com.example.scheduler.database.entities.ActiveScheduleItem
+import com.example.scheduler.database.entities.ScheduleItem
 import com.example.scheduler.ui.theme.SchedulerTheme
+import com.example.scheduler.utility.SchedulerHelperValues.Companion.MILLIS_IN_DAY
 import com.example.scheduler.viewmodels.FragmentViewModel
+import java.text.SimpleDateFormat
+import java.util.Calendar
 
 class LandingPageFragment() : AppFragment {
     // Overrides
     @Composable
     override fun Content() {
-        BaseContent(MainActivity.fragmentViewModel)
+        val scheduleItemMap by MainActivity.databaseViewModel.scheduleItemMapStateFlow.collectAsState()
+        val upcomingActiveScheduleItemsList by MainActivity.databaseViewModel.upcomingActiveScheduleItemsListStateFlow!!.collectAsState()
+        BaseContent(
+            MainActivity.fragmentViewModel,
+            upcomingActiveScheduleItems = upcomingActiveScheduleItemsList,
+            scheduleItemMap = scheduleItemMap
+            )
     }
 
     // Static Functions
@@ -61,13 +69,15 @@ class LandingPageFragment() : AppFragment {
         @OptIn(ExperimentalMaterial3Api::class)
         @Composable
         fun BaseContent(
-            bottomNavAppBarFragmentViewModel: FragmentViewModel = FragmentViewModel()
-        ) {
+            fragmentViewModel: FragmentViewModel = FragmentViewModel(),
+            upcomingActiveScheduleItems: List<ActiveScheduleItem> = listOf(),
+            scheduleItemMap: Map<Long, ScheduleItem> = mapOf(),
+
+            ) {
             val configuration = LocalConfiguration.current
             val density = LocalDensity.current
 
             val screenWidthInDP = with(density) { configuration.screenWidthDp.dp }
-            var resizer by remember { mutableStateOf(-(screenWidthInDP/2)) }
             Column(
                 modifier = Modifier.fillMaxSize()
             ) {
@@ -75,30 +85,7 @@ class LandingPageFragment() : AppFragment {
                 val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
                 Scaffold(
                     modifier = Modifier
-                        .nestedScroll(scrollBehavior.nestedScrollConnection)
-                        .pointerInput(Unit) {
-                            detectDragGestures(
-                                onDragStart = {
-
-                                },
-                                onDragEnd = {
-                                    if (resizer < -(screenWidthInDP / 4)) {
-                                        resizer = -(screenWidthInDP / 2)
-                                    } else {
-                                        resizer = 0.0f.dp
-                                    }
-                                }
-                            ) { change, dragAmount ->
-                                if (change.positionChange() != Offset.Zero) change.consume()
-                                resizer += dragAmount.x.dp
-                                if (resizer < -(screenWidthInDP / 2)) {
-                                    resizer = -(screenWidthInDP / 2)
-                                }
-                                if (resizer > 0.0f.dp) {
-                                    resizer = 0.0f.dp
-                                }
-                            }
-                        },
+                        .nestedScroll(scrollBehavior.nestedScrollConnection),
                     topBar = {
                         TopAppBar(
                             title = { Text(text = "Scheduler") },
@@ -109,26 +96,77 @@ class LandingPageFragment() : AppFragment {
                         )
                     },
                     bottomBar = {
-                        SchedulerNavComposables.SchedulerNavBottomBar(bottomNavAppBarFragmentViewModel)
+                        SchedulerNavComposables.SchedulerNavBottomBar(fragmentViewModel)
                     }
                     ,
                     content = {
                         Box(modifier = Modifier.padding(it)) {
-                            Sidebar(resizer)
                             Column(modifier = Modifier
                                 .fillMaxHeight()
                             ) {
+
                                 // Top 3 Tasks
-                                UpcomingTasks()
+                                ShortList(showing = 3,
+                                    listItem = {
+                                        Box(modifier = Modifier.fillMaxWidth())
+                                        {
+                                            val cal = Calendar.getInstance()
+                                            var percentage = 0.0f
+                                            if(cal.timeInMillis > upcomingActiveScheduleItems[it].startTimeInMillis - MILLIS_IN_DAY)
+                                            {
+                                                val offset = upcomingActiveScheduleItems[it].startTimeInMillis - MILLIS_IN_DAY
+                                                percentage = (cal.timeInMillis.toFloat() - offset )/ (upcomingActiveScheduleItems[it].startTimeInMillis.toFloat() - offset)
+                                            }
+
+                                            FillingProgressBar(
+                                                modifier = Modifier
+                                                    .fillMaxWidth()
+                                                    .height(100.dp),
+                                                percentage = percentage,
+                                                barHeight = 100.dp,
+                                                backgroundColor = ListItemDefaults.containerColor,
+                                                fillColor = Color(0xFF2E8B57)
+                                            )
+                                            ListItem(
+                                                modifier = Modifier.fillMaxSize(),
+                                                colors = ListItemDefaults.colors(containerColor = Color.Transparent),
+                                                headlineContent = { Text(text = scheduleItemMap[upcomingActiveScheduleItems[it].scheduleID]?.title ?: "No Title")},
+                                                supportingContent = { Text(text = scheduleItemMap[upcomingActiveScheduleItems[it].scheduleID]?.description ?: "No Description")},
+                                                trailingContent = { Text(text = SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(upcomingActiveScheduleItems[it].startTimeInMillis))}
+                                            )
+                                        }
+                                    },
+                                    listSize = upcomingActiveScheduleItems.size)
                                 // 4 Dot system
-                                TaskTracker()
+                                //TaskTracker()
                             }
                         }
                     }
                 )
             }
         }
+        @Composable
+        fun FillingProgressBar(
+            modifier: Modifier = Modifier,
+            percentage: Float,
+            backgroundColor: Color = Color.LightGray,
+            fillColor: Color = Color.Green,
+            barHeight: Dp = 20.dp
+        ) {
+            androidx.compose.foundation.Canvas(modifier = modifier
+                .fillMaxWidth()
+                .padding(8.dp)) {
+                val width = size.width
+                val height = barHeight.toPx()
 
+                // Draw background
+                drawRect(color = backgroundColor, size = Size(width, height))
+
+                // Draw filling bar
+                val fillingWidth = width * percentage
+                drawRect(color = fillColor, size = Size(fillingWidth, height))
+            }
+        }
         @Composable
         fun Sidebar(width: Dp) {
             Box(modifier = Modifier
@@ -144,52 +182,6 @@ class LandingPageFragment() : AppFragment {
                     Text(text = "View Schedules")
                     Text(text = "View Calender")
                     Text(text = "View Pain")
-                }
-            }
-        }
-
-        @Composable
-        fun UpcomingTasks() {
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(16.dp)
-                    .background(
-                        MaterialTheme.colorScheme.secondary,
-                        shape = RoundedCornerShape(16.dp)
-                    )
-            ) {
-                Column (
-                    modifier = Modifier.padding(16.dp)
-                ) {
-                    Text("Upcoming Tasks")
-                    LazyColumn(modifier = Modifier) {
-                        items(3) { index ->
-                            ListItem(
-                                modifier = Modifier
-                                    .background(
-                                        MaterialTheme.colorScheme.tertiary,
-                                        shape = RoundedCornerShape(16.dp)
-                                    ),
-
-                                headlineContent = {
-                                    Text("hC")
-                                },
-                                overlineContent = {
-                                    Text("oC")
-                                },
-                                supportingContent = {
-                                    Text("sC")
-                                },
-                                leadingContent = {
-                                    Text("lC")
-                                },
-                                trailingContent = {
-                                    Text("tC")
-                                }
-                            )
-                        }
-                    }
                 }
             }
         }

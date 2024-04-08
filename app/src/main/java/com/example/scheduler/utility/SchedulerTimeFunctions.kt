@@ -1,5 +1,7 @@
 package com.example.scheduler.utility
 
+import java.util.Calendar
+
 
 class SchedulerTimeFunctions {
     companion object {
@@ -39,6 +41,23 @@ class SchedulerTimeFunctions {
                     return values()[value - 1]
                 }
             }
+        }
+        fun getDayOfWeekName(dayOfWeek: Int): String {
+            return when (dayOfWeek) {
+                Calendar.SUNDAY -> "Sunday"
+                Calendar.MONDAY -> "Monday"
+                Calendar.TUESDAY -> "Tuesday"
+                Calendar.WEDNESDAY -> "Wednesday"
+                Calendar.THURSDAY -> "Thursday"
+                Calendar.FRIDAY -> "Friday"
+                Calendar.SATURDAY -> "Saturday"
+                else -> "Weird"
+            }
+        }
+        fun formatTime(hour: Int, minute: Int): String {
+            val formattedHour = hour.toString().padStart(2, '0') // Pad single-digit hours with leading zero
+            val formattedMinute = minute.toString().padStart(2, '0') // Pad single-digit minutes with leading zero
+            return "$formattedHour:$formattedMinute"
         }
     }
 }
